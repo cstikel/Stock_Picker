@@ -218,9 +218,9 @@ def main():
     investing_stocks['price_picked'] = investing_stocks['ticker'].apply(get_price)
     investing_stocks['date'] = today
     
-    #with open('investing_stocks.csv', 'a') as f:
-    #    f.write('\n')
-    #investing_stocks.to_csv('investing_stocks.csv', mode='a', header=False, index=False)
+    with open('investing_stocks.csv', 'a') as f:
+        f.write('\n')
+    investing_stocks.to_csv('investing_stocks.csv', mode='a', header=False, index=False)
     print("Long Positions:")
     print(investing_stocks)
     
@@ -245,16 +245,19 @@ def main():
     short_stocks['price_picked'] = short_stocks['ticker'].apply(get_price)
     short_stocks['date'] = today
     
-    #with open('short_stocks.csv', 'a') as f:
-    #    f.write('\n')
-    #short_stocks.to_csv('short_stocks.csv', mode='a', header=False, index=False)
+    with open('short_stocks.csv', 'a') as f:
+        f.write('\n')
+    short_stocks.to_csv('short_stocks.csv', mode='a', header=False, index=False)
     print("\nShort Positions:")
     print(short_stocks)
     
     # Send email with results
     to_emails = [
         "kristen.anderson08@gmail.com",
-        "Chas.stikes@gmail.com"
+        "Chas.stikes@gmail.com", 
+        "johnstonryan@mac.com",
+        "hgediriweera@gmail.com",
+        "austin.black89@gmail.com"
     ]
     subject_body = f"{date.today().strftime('%Y-%m-%d')} Auto-Generated Stock Picks"
     email_body = format_email_body(investing_stocks, short_stocks)
