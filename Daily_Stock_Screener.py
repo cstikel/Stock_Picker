@@ -254,10 +254,10 @@ def main():
     # Send email with results
     to_emails = [
         "kristen.anderson08@gmail.com",
-        "Chas.stikes@gmail.com", 
-        "johnstonryan@mac.com",
-        "hgediriweera@gmail.com",
-        "austin.black89@gmail.com"
+        "Chas.stikes@gmail.com"
+        #"johnstonryan@mac.com",
+        #"hgediriweera@gmail.com",
+        #"austin.black89@gmail.com"
     ]
     subject_body = f"{date.today().strftime('%Y-%m-%d')} Auto-Generated Stock Picks"
     email_body = format_email_body(investing_stocks, short_stocks)
