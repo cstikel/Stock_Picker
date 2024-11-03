@@ -1,4 +1,5 @@
 from finvizfinance.screener.overview import Overview
+from finvizfinance.quote import finvizfinance
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -86,33 +87,58 @@ def get_non_value_stocks(stock_scores):
     non_value_scores = stock_scores[stock_scores['ticker'].isin(tickers)]
     return non_value_scores[['ticker', '2023', 'roce_rank', 'coef_rank', 'std_rank', 'final_rank']]
 
+def get_market_analysis():
+    """Get market analysis for major indexes"""
+    indexes = ['DJIA', 'QQQ', 'SPY', 'IWM']
+    market_data = []
+    
+    def str_to_num(input):
+        x = float(input.strip('%')) / 100
+        return x
+    
+    def invest_market(input):
+        if input > 0:
+            return "Investable"
+        return "Avoid"
+    
+    intervals = {
+        'Near  - 1 Month': 'SMA20',
+        'Med   - 3 Month': 'SMA50',
+        'Long  - 1 Year ': 'SMA200'
+    }
+    
+    for ind in indexes:
+        index_data = [f'Index: {ind}']
+        stock = finvizfinance(ind)
+        stock_fundament = stock.ticker_fundament()
+        for interval, level in intervals.items():
+            avoid = invest_market(str_to_num(stock_fundament[level]))
+            index_data.append(f'  {interval} ------- {avoid}')
+        market_data.extend(index_data)
+        market_data.append("")  # Add blank line between indexes
+        
+    return market_data
+
 def format_email_body(investing_stocks, short_stocks):
-    """Format the email body with both long and short positions"""
+    """Format the email body with market analysis, long and short positions"""
     def format_dataframe(df):
         """Helper function to format individual DataFrames"""
-        # Select only the specified columns
         df_display = df[['ticker', 'roce_rank', 'coef_rank', 'final_rank']].copy()
-        
-        # Round numeric columns to 0 decimal places for compactness
         df_display = df_display.round(0)
-        
-        # Rename columns to be shorter
         df_display.columns = ['TKR', 'ROCE', 'COEF', 'RANK']
         
-        # Format rank columns as integers
         numeric_cols = df_display.select_dtypes(include=['float64']).columns
         for col in numeric_cols:
             df_display[col] = df_display[col].map('{:.0f}'.format)
         
-        # Create string representation with compact formatting
         return df_display.to_string(
             index=False,
             justify='left',
             col_space={
-                'TKR': 6,   # Reduced from 8
-                'ROCE': 6,  # Reduced from 12
-                'COEF': 6,  # Reduced from 12
-                'RANK': 6   # Reduced from 12
+                'TKR': 6,
+                'ROCE': 6,
+                'COEF': 6,
+                'RANK': 6
             }
         )
 
@@ -120,12 +146,19 @@ def format_email_body(investing_stocks, short_stocks):
     
     # Add header with date
     email_body.append(f"Stock Analysis - {datetime.today().strftime('%b %d, %Y')}")
-    email_body.append("=" * 35)  # Reduced from 50
+    email_body.append("=" * 35)
+    email_body.append("")
+
+    # Add market analysis section
+    email_body.append("MARKET ANALYSIS")
+    email_body.append("-" * 15)
+    market_data = get_market_analysis()
+    email_body.extend(market_data)
     email_body.append("")
 
     # Add long positions section
     email_body.append("LONG POSITIONS")
-    email_body.append("-" * 15)  # Reduced from 20
+    email_body.append("-" * 15)
     if len(investing_stocks) > 0:
         email_body.append(format_dataframe(investing_stocks))
     else:
@@ -140,7 +173,7 @@ def format_email_body(investing_stocks, short_stocks):
 
     # Add short positions section
     email_body.append("SHORT POSITIONS")
-    email_body.append("-" * 15)  # Reduced from 20
+    email_body.append("-" * 15)
     if len(short_stocks) > 0:
         email_body.append(format_dataframe(short_stocks))
     else:
@@ -154,10 +187,9 @@ def format_email_body(investing_stocks, short_stocks):
         email_body.append("")
 
     # Add footer
-    email_body.append("-" * 35)  # Reduced from 50
+    email_body.append("-" * 35)
     email_body.append("Auto-generated report - Do not reply")
     
-    # Join all parts with newlines
     return "\n".join(email_body)
 
 def send_email(to_emails, subject_body, email_body, from_email, password, smtp_server="smtp.gmail.com", smtp_port=587):

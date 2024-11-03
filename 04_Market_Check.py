@@ -15,9 +15,9 @@ def invest_market(input):
 
     return x
 
-intervals = {'Near' : 'SMA20',
-              'Med ' : 'SMA50',
-              'Long' : 'SMA200'}
+intervals = {'Near  - 1 Month' : 'SMA20',
+              'Med   - 3 Month' : 'SMA50',
+              'Long  - 1 Year ' : 'SMA200'}
 
 for ind in indexes:
     print(f'------------ {ind} ------------')
